@@ -9,8 +9,8 @@ app_name = 'api'
 v1_router = DefaultRouter()
 v1_router.register('users', UserViewSet, basename='users')
 
-urlpatterns = [
-    path('v1/', include(router_v1.urls)),]
+# я не понял, что это? urlpatterns = [
+#     path('v1/', include(router_v1.urls)),]
 
 urlpatterns = [
     path('v1/auth/token/', GetTokenView.as_view(), name='token'),
