@@ -1,6 +1,44 @@
+from reviews.models import User, Comment, Review
+
 from rest_framework import serializers
 
-from reviews.models import Comment, Review
+from reviews.validators import validate_username
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role'
+        )
+
+
+class SignUpSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=150,
+    )
+    email = serializers.EmailField(
+        max_length=254
+    )
+
+    def validate_username(self, value):
+        validate_username(value)
+        return value
+
+    class Meta:
+        model = User
+        fields = ('username', 'email')
+
+
+class TokenSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(required=True)
+    confirmation_code = serializers.CharField(required=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'confirmation_code')
+
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -25,3 +63,4 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = '__all__'
         read_only_fields = ('review', 'author')
+
