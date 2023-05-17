@@ -8,14 +8,16 @@ from django.http import Http404
 
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
-from rest_framework import status, mixins, viewsets, filters, serializers
+from rest_framework import status, filters
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.filters import SearchFilter
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from django_filters.rest_framework import DjangoFilterBackend
 
+from .filters import TitlesFilter
 
 from .serializers import (
     UserSerializer,
@@ -28,13 +30,12 @@ from .serializers import (
     TitlesWriteSerializer,
     ReviewSerializer)
 
-from reviews.models import User, Review, Comment, Categories, Title
+from reviews.models import User, Review, Comment, Categories, Title, Genres
 from api_yamdb.settings import ADMIN_EMAIL
 
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.pagination import LimitOffsetPagination
 from .permissions import IsAdminOrReadOnly, IsAdminOrModeratorOrAuthor
-from rest_framework.decorators import permission_classes
 
 from .mixins import CDLViewSet, CDLViewSet_2
 from .pagination import CategoriesPagination
@@ -122,9 +123,10 @@ class GetTokenView(APIView):
 
 class CategoriesViewSet(CDLViewSet):
 
-    queryset = Categories.objects.all()
+    queryset = Categories.objects.all().order_by('name')
     serializer_class = CategoriesSerializer
     pagination_class = CategoriesPagination
+
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
@@ -133,13 +135,14 @@ class CategoriesViewSet(CDLViewSet):
 
 class GenresViewSet(CDLViewSet):
 
-    queryset = Categories.objects.all()
+    queryset = Genres.objects.all().order_by('name')
     serializer_class = GenresSerializer
     permission_classes = (IsAdminOrReadOnly,)
+
     pagination_class = CategoriesPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-    lookup_field = "name"
+    lookup_field = "slug"
 
 
 class TitlesViewSet(CDLViewSet_2):
@@ -148,8 +151,8 @@ class TitlesViewSet(CDLViewSet_2):
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')).order_by('name')
     permission_classes = (IsAdminOrReadOnly,)
-    # filter_backends = (DjangoFilterBackend,)
-    # filterset_class = TitleFilter
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitlesFilter
     http_method_names = ("get", "post", "delete", "patch")
 
     def get_serializer_class(self):
