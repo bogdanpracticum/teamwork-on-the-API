@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 from .validators import validate_username
 
@@ -70,6 +71,7 @@ class User(AbstractUser):
 
 # Модели Миши
 
+
 DEFAULT_CHOICES = (
     ('5', 'Отлично'),
     ('4', 'Хорошо'),
@@ -78,6 +80,7 @@ DEFAULT_CHOICES = (
     ('1', 'Ужасно'),
 )
 
+
 class Categories(models.Model):
     '''модель категорий'''
     name = models.CharField(max_length=256)
@@ -85,7 +88,7 @@ class Categories(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     class Meta:
         verbose_name = "Категория:",
         verbose_name_plural = "Категории:"
@@ -98,17 +101,17 @@ class Genres(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     class Meta:
         verbose_name = "Жанр:",
         verbose_name_plural = "Жанры:"
 
 
-class Titles(models.Model):
+class Title(models.Model):
     '''модель произведений искусства'''
     name = models.CharField(max_length=256)
-    year = models.PositiveIntegerField()
-    desription = models.TextField()
+    year = models.PositiveIntegerField(blank=True,)
+    description = models.TextField(blank=True)
 
     genre = models.ManyToManyField(
         Genres,
@@ -131,7 +134,7 @@ class Titles(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     class Meta:
         verbose_name = "Произведение:",
         verbose_name_plural = "Произведения:"
@@ -140,39 +143,74 @@ class Titles(models.Model):
 class Review(models.Model):
     """Модель отзывов на произведения."""
 
-    title = models.ForeignKey(Titles, on_delete=models.CASCADE)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    text = models.TextField()
-    created = models.DateTimeField(
-        'Дата создания', auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(
-        'Дата изменения', auto_now_add=True, db_index=True)
-    rating_choices = DEFAULT_CHOICES
-    mark = models.CharField(
-        max_length=20,
-        verbose_name=('Value'),
-        choices=rating_choices,
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='Произведение'
     )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='Автор'
+    )
+    text = models.TextField()
+    pub_date = models.DateTimeField(
+        'Дата создания',
+        auto_now_add=True
+    )
+    score = models.PositiveSmallIntegerField(
+        'Оценка',
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(10)
+        ]
+    )
+
+    class Meta:
+        ordering = ['-pub_date']
+        verbose_name = "Отзыв:",
+        verbose_name_plural = "Отзывы:"
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'author'],
+                name='unique_rev_author'
+            )
+        ]
 
 
 class Comment(models.Model):
     """Модель комментариев к отзывам."""
 
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='comments')
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Автор'
+    )
     review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, related_name='comments')
+        Review,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Произведение'
+    )
     text = models.TextField()
-    created = models.DateTimeField(
-        'Дата создания', auto_now_add=True, db_index=True)
-    updated = models.DateTimeField(
-        'Дата изменения', auto_now_add=True, db_index=True)
+    pub_date = models.DateTimeField(
+        'Дата создания',
+        auto_now_add=True
+    )
+
+    class Meta:
+        ordering = ['-pub_date']
+        verbose_name = "Комментарий:",
+        verbose_name_plural = "Комментарии:"
 
 
 class TitlesGenres(models.Model):
     '''Промежуточная модель для связи ManyToMany'''
     title = models.ForeignKey(
-        Titles,
+        Title,
         on_delete=models.SET_NULL,
         related_name='titlesgenres',
         null=True
