@@ -21,7 +21,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Categories, Comment, Genres, Review, Title, User
 
 from .filters import TitlesFilter
-from .mixins import CDLViewSet, CDLViewSet_2
+from .mixins import CDLViewSet, CRUDViewSet
 from .pagination import CategoriesPagination
 from .permissions import IsAdminOrModeratorOrAuthor, IsAdminOrReadOnly
 from .serializers import (CategoriesSerializer, CommentSerializer,
@@ -134,7 +134,7 @@ class GenresViewSet(CDLViewSet):
     lookup_field = "slug"
 
 
-class TitlesViewSet(CDLViewSet_2):
+class TitlesViewSet(CRUDViewSet):
     """Вьюсет для произведения."""
 
     queryset = Title.objects.annotate(
@@ -150,7 +150,7 @@ class TitlesViewSet(CDLViewSet_2):
         return TitlesWriteSerializer
 
 
-class ReviewViewSet(ModelViewSet):
+class ReviewViewSet(CRUDViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = (
@@ -158,10 +158,6 @@ class ReviewViewSet(ModelViewSet):
         IsAuthenticatedOrReadOnly
     )
     pagination_class = PageNumberPagination
-
-    def object_title(self):
-        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        return title
 
     def get_queryset(self):
         title = get_object_or_404(

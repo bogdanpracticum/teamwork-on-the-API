@@ -51,7 +51,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = ('id', 'title', 'author', 'text', 'pub_date', 'score')
         read_only_fields = ('title', 'author')
 
     def validate(self, attrs):
@@ -105,8 +105,6 @@ class TitlesRetrieveSerializer(serializers.ModelSerializer):
     category = CategoriesSerializer(read_only=True)
     genre = GenresSerializer(read_only=True, many=True)
     rating = serializers.IntegerField(read_only=True)
-
-    # year = serializers.SerializerMethodField()
 
     class Meta:
         fields = (

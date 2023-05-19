@@ -9,10 +9,10 @@ class CDLViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin,
     pass
 
 
-class CDLViewSet_2(mixins.CreateModelMixin, mixins.UpdateModelMixin,
-                   mixins.DestroyModelMixin, mixins.RetrieveModelMixin,
-                   mixins.ListModelMixin, viewsets.GenericViewSet):
+class CRUDViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin,
+                  mixins.DestroyModelMixin, mixins.RetrieveModelMixin,
+                  mixins.ListModelMixin, viewsets.GenericViewSet):
     """Базовый viewset class.
-    Поддерживаемые методы: Create, Destroy, List.
+    Поддерживаемые методы: Create, Destroy, List, Retrieve
     """
     pass
