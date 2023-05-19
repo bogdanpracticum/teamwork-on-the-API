@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from .validators import validate_username
+from .validators import validate_username, validate_year
 
 
 USER = 'user'
@@ -69,20 +69,8 @@ class User(AbstractUser):
     def is_user(self):
         return self.role == USER
 
-# Модели Миши
 
-
-DEFAULT_CHOICES = (
-    ('5', 'Отлично'),
-    ('4', 'Хорошо'),
-    ('3', 'Нормально'),
-    ('2', 'Плохо'),
-    ('1', 'Ужасно'),
-)
-
-
-class Categories(models.Model):
-    '''модель категорий'''
+class CatGenAbsract(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
 
@@ -90,19 +78,22 @@ class Categories(models.Model):
         return self.name
 
     class Meta:
+        abstract = True
+        ordering = ['name']
+
+
+class Categories(CatGenAbsract):
+    '''модель категорий'''
+
+    class Meta(CatGenAbsract.Meta):
         verbose_name = "Категория:",
         verbose_name_plural = "Категории:"
 
 
-class Genres(models.Model):
+class Genres(CatGenAbsract):
     '''модель жанров'''
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True, max_length=50)
 
-    def __str__(self):
-        return self.name
-
-    class Meta:
+    class Meta(CatGenAbsract.Meta):
         verbose_name = "Жанр:",
         verbose_name_plural = "Жанры:"
 
@@ -110,12 +101,12 @@ class Genres(models.Model):
 class Title(models.Model):
     '''модель произведений искусства'''
     name = models.CharField(max_length=256)
-    year = models.PositiveIntegerField(blank=True,)
+    year = models.PositiveIntegerField(blank=True,
+                                       validators=(validate_year,))
     description = models.TextField(blank=True)
-
+    # не могу изменить имя, тесты не пускают
     genre = models.ManyToManyField(
         Genres,
-        # on_delete=models.SET_NULL,
         related_name='titles',
         verbose_name='Жанр:',
         help_text='Выберите жанр:',
@@ -205,13 +196,3 @@ class Comment(models.Model):
         ordering = ['-pub_date']
         verbose_name = "Комментарий:",
         verbose_name_plural = "Комментарии:"
-
-
-class TitlesGenres(models.Model):
-    '''Промежуточная модель для связи ManyToMany'''
-    title = models.ForeignKey(
-        Title,
-        on_delete=models.SET_NULL,
-        related_name='titlesgenres',
-        null=True
-    )
