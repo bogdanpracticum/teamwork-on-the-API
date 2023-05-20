@@ -1,73 +1,8 @@
-from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from .validators import validate_username, validate_year
-
-
-USER = 'user'
-MODERATOR = 'moderator'
-ADMIN = 'admin'
-ROLE_CHOICES = ((USER, 'Пользователь'), (MODERATOR, 'Модератор'),
-                (ADMIN, 'Администратор'))
-
-
-class User(AbstractUser):
-    username = models.CharField(
-        'Никнейм',
-        max_length=150,
-        unique=True,
-        validators=(validate_username,)
-    )
-    email = models.EmailField(
-        'Электронная почта',
-        max_length=254,
-        unique=True,
-    )
-    first_name = models.CharField(
-        'Имя',
-        max_length=150,
-        blank=True
-    )
-    last_name = models.CharField(
-        'Фамилия',
-        max_length=150,
-        blank=True
-    )
-    bio = models.TextField(
-        'Немного о себе',
-        blank=True
-    )
-    role = models.CharField(
-        'Роль',
-        max_length=20,
-        choices=ROLE_CHOICES,
-        default=USER,
-    )
-
-    class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
-
-    def save(self, *args, **kwargs):
-        if self.role == ADMIN:
-            self.is_staff = True
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.username
-
-    @property
-    def is_admin(self):
-        return self.role == ADMIN or self.is_superuser
-
-    @property
-    def is_moderator(self):
-        return self.role == MODERATOR
-
-    @property
-    def is_user(self):
-        return self.role == USER
+from users.models import User
+from .validators import validate_year
 
 
 class CatGenAbsract(models.Model):

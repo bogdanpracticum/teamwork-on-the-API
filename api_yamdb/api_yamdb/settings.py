@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'api.apps.ApiConfig',
     'reviews.apps.ReviewsConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -130,6 +131,6 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-AUTH_USER_MODEL = 'reviews.User'
+AUTH_USER_MODEL = 'users.User'
 
 ADMIN_EMAIL = 'admin_yamdb@yandex.ru'

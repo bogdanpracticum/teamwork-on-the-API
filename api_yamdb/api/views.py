@@ -1,10 +1,7 @@
-
-from api_yamdb.settings import ADMIN_EMAIL
-from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Avg
 from django.http import Http404
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status
@@ -18,10 +15,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import Categories, Comment, Genres, Review, Title, User
+from reviews.models import Categories, Comment, Genres, Review, Title
+from users.models import User
 
 from .filters import TitlesFilter
 from .mixins import CDLViewSet, CRUDViewSet
+from .utils import send_email
 from .pagination import CategoriesPagination
 from .permissions import IsAdminOrModeratorOrAuthor, IsAdminOrReadOnly
 from .serializers import (CategoriesSerializer, CommentSerializer,
@@ -52,15 +51,6 @@ class UserViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-def send_email(user):
-    confirmation_code = default_token_generator.make_token(user)
-    email_subject = 'Код для авторизации'
-    email_text = f'Ваш код для авторизации - {confirmation_code}'
-    admin_email = ADMIN_EMAIL
-    user_email = [user.email]
-    return send_mail(email_subject, email_text, admin_email, user_email)
-
-
 class SignUpView(APIView):
     permission_classes = (AllowAny,)
 
@@ -70,7 +60,7 @@ class SignUpView(APIView):
         username = serializer.validated_data['username']
         email = serializer.validated_data['email']
         try:
-            user, create = User.objects.get_or_create(
+            user, _create = User.objects.get_or_create(
                 username=username,
                 email=email
             )
