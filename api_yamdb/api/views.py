@@ -1,6 +1,5 @@
 from django.db import IntegrityError
 from django.db.models import Avg
-from django.http import Http404
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -83,11 +82,7 @@ class GetTokenView(APIView):
         serializer = TokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         username = serializer.data['username']
-        try:
-            user = get_object_or_404(User, username=username)
-        except Http404:
-            return Response({'username': 'Неверное имя пользователя'},
-                            status=status.HTTP_404_NOT_FOUND)
+        user = get_object_or_404(User, username=username)
         confirmation_code = serializer.data['confirmation_code']
         if not default_token_generator.check_token(user, confirmation_code):
             return Response(
