@@ -1,6 +1,5 @@
 from django.db import IntegrityError
 from django.db.models import Avg
-from django.http import Http404
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -83,9 +82,8 @@ class GetTokenView(APIView):
         serializer = TokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         username = serializer.data['username']
-        try:
-            user = get_object_or_404(User, username=username)
-        except Http404:
+        user = User.objects.filter(username=username).first()
+        if not user:
             return Response({'username': 'Неверное имя пользователя'},
                             status=status.HTTP_404_NOT_FOUND)
         confirmation_code = serializer.data['confirmation_code']
@@ -106,7 +104,7 @@ class CategoriesViewSet(CDLViewSet):
     serializer_class = CategoriesSerializer
     pagination_class = CategoriesPagination
 
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrReadOnly)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = "slug"
@@ -116,7 +114,7 @@ class GenresViewSet(CDLViewSet):
 
     queryset = Genres.objects.all().order_by('name')
     serializer_class = GenresSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrReadOnly)
 
     pagination_class = CategoriesPagination
     filter_backends = (filters.SearchFilter,)
@@ -129,7 +127,7 @@ class TitlesViewSet(CRUDViewSet):
 
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')).order_by('name')
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrReadOnly)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitlesFilter
     http_method_names = ("get", "post", "delete", "patch")

@@ -65,15 +65,3 @@ class User(AbstractUser):
     @property
     def is_user(self):
         return self.role == UserRole.USER
-
-
-class CatGenAbsract(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True, max_length=50)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        abstract = True
-        ordering = ['name']

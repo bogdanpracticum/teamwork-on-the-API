@@ -6,14 +6,7 @@ from users.models import UserRole
 class IsAdminOrReadOnly(permissions.IsAuthenticatedOrReadOnly):
     def has_permission(self, request, view):
         if (request.method in permissions.SAFE_METHODS
-            or request.user.is_authenticated
-                and request.user.role == UserRole.ADMIN):
-            return True
-
-    def has_object_permission(self, request, view, obj):
-        if (request.method in permissions.SAFE_METHODS
-            or request.user.is_authenticated
-                and request.user.role == UserRole.ADMIN):
+                or request.user.role == UserRole.ADMIN):
             return True
 
 
