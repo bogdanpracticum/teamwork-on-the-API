@@ -39,7 +39,6 @@ class Title(models.Model):
     year = models.PositiveIntegerField(blank=True,
                                        validators=(validate_year,))
     description = models.TextField(blank=True)
-    # не могу изменить имя, тесты не пускают
     genre = models.ManyToManyField(
         Genres,
         related_name='titles',

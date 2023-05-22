@@ -82,10 +82,14 @@ class GetTokenView(APIView):
         serializer = TokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         username = serializer.data['username']
+<<<<<<< HEAD
         user = User.objects.filter(username=username).first()
         if not user:
             return Response({'username': 'Неверное имя пользователя'},
                             status=status.HTTP_404_NOT_FOUND)
+=======
+        user = get_object_or_404(User, username=username)
+>>>>>>> 903b6019e15ef39a91b3b36e3d17533b928aa891
         confirmation_code = serializer.data['confirmation_code']
         if not default_token_generator.check_token(user, confirmation_code):
             return Response(
