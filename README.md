@@ -2,10 +2,10 @@
 
 Rомандный проект. Были написаны модели и API к ним.
 
-# Авторы
-Y4sei
-mkoronatov
-bogdanpracticum
+# Авторы  
+Y4sei  
+mkoronatov  
+bogdanpracticum  
 
 # Технологии
 
